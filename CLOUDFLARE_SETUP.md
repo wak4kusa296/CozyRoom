@@ -86,3 +86,4 @@ git push origin main
 これで、GitHubにプッシュするだけで自動的にCloudflare Pagesにデプロイされます。
 
 
+
