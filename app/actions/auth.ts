@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/libs/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -23,14 +24,11 @@ export async function authenticateWithInvitationCode(
 
   // Service Role Keyを使用してRLSをバイパス（カスタムセッション管理のため）
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   let supabaseClient = supabase
 
-  if (serviceRoleKey) {
-    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-    supabaseClient = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      serviceRoleKey
-    ) as any
+  if (serviceRoleKey && supabaseUrl) {
+    supabaseClient = createServiceClient(supabaseUrl, serviceRoleKey) as any
   }
 
   // 招待コードでユーザーを検索
@@ -58,10 +56,12 @@ export async function authenticateWithInvitationCode(
   const { cookies } = await import('next/headers')
   const cookieStore = await cookies()
   
+  const isProduction = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('supabase.co')
+  
   // セッション情報をCookieに保存（30日間有効）
   cookieStore.set('cozyroom_user_id', user.id, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30, // 30日
     path: '/',
@@ -69,7 +69,7 @@ export async function authenticateWithInvitationCode(
   
   cookieStore.set('cozyroom_user_name', user.name, {
     httpOnly: false, // クライアント側でも参照可能
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30,
     path: '/',
@@ -77,7 +77,7 @@ export async function authenticateWithInvitationCode(
   
   cookieStore.set('cozyroom_user_role', user.role, {
     httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30,
     path: '/',

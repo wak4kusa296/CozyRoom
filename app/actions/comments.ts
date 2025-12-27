@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/libs/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { getCurrentUser } from '@/libs/auth'
 import { revalidatePath } from 'next/cache'
 
@@ -36,10 +37,9 @@ export async function getComments(postId: string): Promise<Comment[]> {
   
   // Service Role Keyが設定されている場合は使用（RLSをバイパス）
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const supabaseClient = serviceRoleKey
-    ? await import('@supabase/supabase-js').then(({ createClient }) =>
-        createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey)
-      )
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseClient = (serviceRoleKey && supabaseUrl)
+    ? createServiceClient(supabaseUrl, serviceRoleKey)
     : supabase
 
   // 全コメントを取得（RLSポリシーはカスタムセッション管理では機能しないため、アプリ側でフィルタリング）
@@ -123,10 +123,9 @@ export async function createComment(
   
   // Service Role Keyが設定されている場合は使用
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const supabaseClient = serviceRoleKey
-    ? await import('@supabase/supabase-js').then(({ createClient }) =>
-        createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey)
-      )
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseClient = (serviceRoleKey && supabaseUrl)
+    ? createServiceClient(supabaseUrl, serviceRoleKey)
     : supabase
 
   const { data: comment, error } = await supabaseClient
@@ -185,10 +184,9 @@ export async function deleteComment(commentId: number): Promise<{ error?: string
   
   // Service Role Keyが設定されている場合は使用
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const supabaseClient = serviceRoleKey
-    ? await import('@supabase/supabase-js').then(({ createClient }) =>
-        createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey)
-      )
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseClient = (serviceRoleKey && supabaseUrl)
+    ? createServiceClient(supabaseUrl, serviceRoleKey)
     : supabase
 
   // 自分のコメントか確認
