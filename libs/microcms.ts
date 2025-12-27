@@ -18,18 +18,15 @@ export interface MicroCMSListResponse<T> {
   limit: number
 }
 
-const MICROCMS_API_KEY = process.env.MICROCMS_API_KEY
-const MICROCMS_SERVICE_DOMAIN = process.env.MICROCMS_SERVICE_DOMAIN
+const API_KEY = process.env.MICROCMS_API_KEY
+const SERVICE_DOMAIN = process.env.MICROCMS_SERVICE_DOMAIN
+const API_BASE_URL = SERVICE_DOMAIN ? `https://${SERVICE_DOMAIN}.microcms.io/api/v1` : ''
 
-if (!MICROCMS_API_KEY || !MICROCMS_SERVICE_DOMAIN) {
-  throw new Error('MicroCMS環境変数が設定されていません')
+function checkConfig() {
+  if (!API_KEY || !SERVICE_DOMAIN) {
+    throw new Error('MicroCMS環境変数が設定されていません。MICROCMS_SERVICE_DOMAIN と MICROCMS_API_KEY を設定してください。')
+  }
 }
-
-// 型アサーション: 上記のチェックでundefinedではないことが保証されている
-const API_KEY: string = MICROCMS_API_KEY
-const SERVICE_DOMAIN: string = MICROCMS_SERVICE_DOMAIN
-
-const API_BASE_URL = `https://${SERVICE_DOMAIN}.microcms.io/api/v1`
 
 /**
  * MicroCMSから記事一覧を取得
@@ -38,11 +35,12 @@ export async function getArticles(
   limit: number = 10,
   offset: number = 0
 ): Promise<MicroCMSListResponse<MicroCMSArticle>> {
+  checkConfig()
   const url = `${API_BASE_URL}/blog?limit=${limit}&offset=${offset}`
   
   const response = await fetch(url, {
     headers: {
-      'X-MICROCMS-API-KEY': API_KEY,
+      'X-MICROCMS-API-KEY': API_KEY!,
     },
     next: { revalidate: 60 }, // 60秒間キャッシュ
   })
@@ -76,11 +74,12 @@ export async function getArticles(
 export async function getArticleById(
   contentId: string
 ): Promise<MicroCMSArticle> {
+  checkConfig()
   const url = `${API_BASE_URL}/blog/${contentId}`
   
   const response = await fetch(url, {
     headers: {
-      'X-MICROCMS-API-KEY': API_KEY,
+      'X-MICROCMS-API-KEY': API_KEY!,
     },
     next: { revalidate: 60 },
   })
@@ -106,6 +105,11 @@ export async function getArticleById(
  * 全記事のID一覧を取得（静的生成用）
  */
 export async function getAllArticleIds(): Promise<string[]> {
+  if (!API_KEY || !SERVICE_DOMAIN) {
+    console.warn('MicroCMS環境変数が設定されていないため、getAllArticleIds は空配列を返します。ビルド時のみ発生する場合は問題ありませんが、デプロイ後の環境では確認が必要です。')
+    return []
+  }
+
   const response = await fetch(`${API_BASE_URL}/blog?limit=1000&fields=id`, {
     headers: {
       'X-MICROCMS-API-KEY': API_KEY,
