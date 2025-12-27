@@ -22,12 +22,6 @@ const API_KEY = process.env.MICROCMS_API_KEY
 const SERVICE_DOMAIN = process.env.MICROCMS_SERVICE_DOMAIN
 const API_BASE_URL = SERVICE_DOMAIN ? `https://${SERVICE_DOMAIN}.microcms.io/api/v1` : ''
 
-function checkConfig() {
-  if (!API_KEY || !SERVICE_DOMAIN) {
-    throw new Error('MicroCMS環境変数が設定されていません。MICROCMS_SERVICE_DOMAIN と MICROCMS_API_KEY を設定してください。')
-  }
-}
-
 /**
  * MicroCMSから記事一覧を取得
  */
@@ -35,7 +29,14 @@ export async function getArticles(
   limit: number = 10,
   offset: number = 0
 ): Promise<MicroCMSListResponse<MicroCMSArticle>> {
-  checkConfig()
+  if (!API_KEY || !SERVICE_DOMAIN) {
+    return {
+      contents: [],
+      totalCount: 0,
+      offset,
+      limit,
+    }
+  }
   const url = `${API_BASE_URL}/blog?limit=${limit}&offset=${offset}`
   
   const response = await fetch(url, {
@@ -74,7 +75,17 @@ export async function getArticles(
 export async function getArticleById(
   contentId: string
 ): Promise<MicroCMSArticle> {
-  checkConfig()
+  if (!API_KEY || !SERVICE_DOMAIN) {
+    // ビルド時や環境変数が無い場合にエラーでビルドを止めないよう、ダミーデータを返すか
+    // あるいは呼び出し元で適切にハンドリングされるようにする
+    return {
+      id: contentId,
+      title: '記事を取得できません',
+      content: '<p>MicroCMSの環境変数が設定されていないか、記事の取得に失敗しました。</p>',
+      publishedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+  }
   const url = `${API_BASE_URL}/blog/${contentId}`
   
   const response = await fetch(url, {
