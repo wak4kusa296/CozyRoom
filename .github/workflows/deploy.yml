@@ -69,8 +69,7 @@ jobs:
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages deploy .vercel/output/static \
-            --project-name=${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || 'cozyroom' }} \
-            --compatibility-date=2024-01-01
+            --project-name=${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || 'cozyroom' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
