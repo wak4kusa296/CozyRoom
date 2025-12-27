@@ -1,18 +1,10 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/libs/auth'
-import { getArticleById, getAllArticleIds, type MicroCMSArticle } from '@/libs/microcms'
+import { getArticleById, type MicroCMSArticle } from '@/libs/microcms'
 import Comments from './components/Comments'
 import Link from 'next/link'
 
-export async function generateStaticParams() {
-  try {
-    const ids = await getAllArticleIds()
-    return ids.map((id) => ({ slug: id }))
-  } catch (error) {
-    console.error('Error generating static params:', error)
-    return []
-  }
-}
+export const dynamic = 'force-dynamic'
 
 export default async function ArticlePage({
   params,

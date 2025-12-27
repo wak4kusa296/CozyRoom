@@ -4,6 +4,8 @@ import { signOut } from '../actions/auth'
 import { getArticles, type MicroCMSArticle } from '@/libs/microcms'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default async function BlogPage() {
   const user = await getCurrentUser()
   
