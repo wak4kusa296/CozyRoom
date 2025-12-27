@@ -1,0 +1,38 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep-Alive Request
+        run: |
+          curl -X GET \
+            -H "Authorization: Bearer ${{ secrets.KEEP_ALIVE_SECRET }}" \
+            "${{ secrets.KEEP_ALIVE_URL }}/api/cron?token=${{ secrets.KEEP_ALIVE_SECRET }}"
+        
+      - name: Check Response
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X GET \
+            -H "Authorization: Bearer ${{ secrets.KEEP_ALIVE_SECRET }}" \
+            "${{ secrets.KEEP_ALIVE_URL }}/api/cron?token=${{ secrets.KEEP_ALIVE_SECRET }}")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+          
+          if [ "$http_code" = "200" ] && echo "$body" | grep -q '"success":true'; then
+            echo "✅ Keep-alive successful"
+            exit 0
+          else
+            echo "❌ Keep-alive failed"
+            echo "HTTP Code: $http_code"
+            echo "Response: $body"
+            exit 1
+          fi
