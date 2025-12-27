@@ -210,4 +210,34 @@ GitHub Actionsの "Supabase Keep-Alive" ワークフローが正常に動作し�
    - 設定しない場合は、デフォルトで `cozyroom` が使用されます
 4. プロジェクトが存在しない場合は、上記の「0. Cloudflare Pages プロジェクトの作成」の手順に従って作成してください
 
+### 500 Internal Server Error
+
+エラーメッセージ: `500 Internal Server Error`
+
+**これは進展です！** `nodejs_compat`フラグが適用され、Node.js互換性の問題は解決されています。500エラーはアプリケーション側の問題です。
+
+**確認すべきこと**:
+
+1. **Cloudflare Pagesのログを確認**：
+   - Cloudflareダッシュボード > Pages > プロジェクト名
+   - 「Deployments」タブを開く
+   - 最新のデプロイをクリック
+   - 「View Logs」または「Functions」セクションでエラーログを確認
+
+2. **環境変数が正しく設定されているか確認**：
+   - Settings > Environment variables
+   - すべての必須環境変数が設定されているか確認
+   - Production と Preview の両方に設定されているか確認
+
+3. **よくある原因**：
+   - 環境変数の値が間違っている
+   - SupabaseやMicroCMSへの接続エラー
+   - データベースの接続エラー
+   - APIキーが無効または期限切れ
+
+4. **デプロイログを確認**（GitHub Actions）：
+   - GitHubリポジトリ > Actions
+   - 最新のデプロイワークフローを確認
+   - ビルドやデプロイ中にエラーが出ていないか確認
+
 
