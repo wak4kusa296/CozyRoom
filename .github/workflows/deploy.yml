@@ -40,31 +40,35 @@ jobs:
           ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
           API_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
           
+          echo "プロジェクト '$PROJECT_NAME' の存在確認中..."
+          
           # プロジェクトが存在するか確認
-          RESPONSE=$(curl -s -X GET \
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X GET \
             "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT_NAME}" \
             -H "Authorization: Bearer ${API_TOKEN}" \
             -H "Content-Type: application/json")
           
-          # 404エラーの場合（プロジェクトが存在しない）、作成を試みる
-          if echo "$RESPONSE" | grep -q '"code":8000007' || echo "$RESPONSE" | grep -q '"success":false'; then
-            echo "プロジェクト '$PROJECT_NAME' が見つかりません。作成します..."
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✓ プロジェクト '$PROJECT_NAME' は既に存在します。"
+          else
+            echo "プロジェクト '$PROJECT_NAME' が見つかりません（HTTP $HTTP_CODE）。作成します..."
             CREATE_RESPONSE=$(curl -s -X POST \
               "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects" \
               -H "Authorization: Bearer ${API_TOKEN}" \
               -H "Content-Type: application/json" \
-              -d "{\"name\":\"${PROJECT_NAME}\",\"production_branch\":\"main\"}")
+              -d "{\"name\":\"${PROJECT_NAME}\"}")
+            
+            echo "作成レスポンス: $CREATE_RESPONSE"
             
             if echo "$CREATE_RESPONSE" | grep -q '"success":true'; then
-              echo "プロジェクト '$PROJECT_NAME' を作成しました。"
+              echo "✓ プロジェクト '$PROJECT_NAME' を作成しました。"
+            elif echo "$CREATE_RESPONSE" | grep -q '"code":10004'; then
+              echo "プロジェクト '$PROJECT_NAME' は既に存在します。"
             else
-              echo "プロジェクト作成のレスポンス: $CREATE_RESPONSE"
-              echo "プロジェクトが既に存在する可能性があります。続行します..."
+              echo "警告: プロジェクト作成に失敗しました: $CREATE_RESPONSE"
+              echo "プロジェクトを手動で作成してください: https://dash.cloudflare.com/"
             fi
-          else
-            echo "プロジェクト '$PROJECT_NAME' は既に存在します。"
           fi
-        continue-on-error: true
 
       - name: Deploy to Cloudflare Pages
         run: |
