@@ -36,10 +36,18 @@ jobs:
 
       - name: Create Cloudflare Pages Project (if not exists)
         run: |
+          set -e
           PROJECT_NAME="${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || 'cozyroom' }}"
           ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
           API_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
           
+          if [ -z "$ACCOUNT_ID" ] || [ -z "$API_TOKEN" ]; then
+            echo "エラー: CLOUDFLARE_ACCOUNT_ID または CLOUDFLARE_API_TOKEN が設定されていません"
+            exit 1
+          fi
+          
+          echo "プロジェクト名: $PROJECT_NAME"
+          echo "アカウントID: $ACCOUNT_ID"
           echo "プロジェクト '$PROJECT_NAME' の存在確認中..."
           
           # プロジェクトが存在するか確認
@@ -47,6 +55,8 @@ jobs:
             "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT_NAME}" \
             -H "Authorization: Bearer ${API_TOKEN}" \
             -H "Content-Type: application/json")
+          
+          echo "存在確認のHTTPステータス: $HTTP_CODE"
           
           if [ "$HTTP_CODE" = "200" ]; then
             echo "✓ プロジェクト '$PROJECT_NAME' は既に存在します。"
@@ -58,17 +68,26 @@ jobs:
               -H "Content-Type: application/json" \
               -d "{\"name\":\"${PROJECT_NAME}\"}")
             
-            echo "作成レスポンス: $CREATE_RESPONSE"
+            echo "作成APIレスポンス: $CREATE_RESPONSE"
             
             if echo "$CREATE_RESPONSE" | grep -q '"success":true'; then
               echo "✓ プロジェクト '$PROJECT_NAME' を作成しました。"
-            elif echo "$CREATE_RESPONSE" | grep -q '"code":10004'; then
+            elif echo "$CREATE_RESPONSE" | grep -q '"code":10004' || echo "$CREATE_RESPONSE" | grep -q '"already exists"'; then
               echo "プロジェクト '$PROJECT_NAME' は既に存在します。"
             else
-              echo "警告: プロジェクト作成に失敗しました: $CREATE_RESPONSE"
-              echo "プロジェクトを手動で作成してください: https://dash.cloudflare.com/"
+              echo "❌ エラー: プロジェクト作成に失敗しました"
+              echo "レスポンス: $CREATE_RESPONSE"
+              echo ""
+              echo "手動でプロジェクトを作成してください:"
+              echo "1. https://dash.cloudflare.com/ にアクセス"
+              echo "2. Workers & Pages > Pages > Create a project"
+              echo "3. プロジェクト名: $PROJECT_NAME"
+              exit 1
             fi
           fi
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Deploy to Cloudflare Pages
         run: |
