@@ -53,15 +53,34 @@ Cloudflare Pagesのダッシュボードで以下の環境変数を設定して�
 
 **重要**: `@cloudflare/next-on-pages`を使用する場合、`nodejs_compat`フラグを有効にする必要があります。
 
-### 手動設定方法
+### 手動設定方法（詳細手順）
 
-1. Cloudflareダッシュボードにログイン
-2. Pages > プロジェクト名 > Settings > Functions
-3. 「Compatibility Flags」セクションを見つける
-4. Production と Preview の両方に `nodejs_compat` を追加
-   - 「Add compatibility flag」をクリック
-   - `nodejs_compat` を選択
-5. 変更を保存
+1. [Cloudflareダッシュボード](https://dash.cloudflare.com/)にログイン
+2. 「Workers & Pages」→「Pages」→プロジェクト名を選択
+3. 「Settings」タブを開く
+4. 左サイドバーから「Functions」をクリック
+5. 「Compatibility Flags」セクションを探す（Functions ページの中ほど）
+6. **Production 環境**に設定：
+   - Production セクションの「Add compatibility flag」ボタンをクリック
+   - ドロップダウンから `nodejs_compat` を選択（入力ではなく選択）
+   - 「Save」ボタンをクリック（画面の下部または右上）
+7. **Preview 環境**にも設定：
+   - Preview セクションの「Add compatibility flag」ボタンをクリック
+   - ドロップダウンから `nodejs_compat` を選択
+   - 「Save」ボタンをクリック
+
+**重要**: 
+- Production と Preview の**両方**に設定してください
+- フラグ名は `nodejs_compat` と正確に入力（引用符不要）
+- 設定後、ブラウザのページをリロードして確認してください
+- **設定後、新しいデプロイが必要な場合があります**
+
+### 設定の確認方法
+
+1. Settings > Functions > Compatibility Flags に戻る
+2. Production セクションに `nodejs_compat` が表示されているか確認
+3. Preview セクションに `nodejs_compat` が表示されているか確認
+4. 表示されていない場合は、再度追加してください
 
 ### 自動設定
 
