@@ -1,61 +1,50 @@
-# Cloudflare Pages デプロイ手順
+# Cloudflare Pages デプロイ手順（GitHub連携）
 
-## 0. Cloudflare Pages プロジェクトの作成
+このドキュメントでは、Cloudflare PagesとGitHubを連携し、プッシュするだけで自動デプロイする標準的な方法を説明します。
 
-**重要**: GitHub Actionsでデプロイする前に、Cloudflare Pagesでプロジェクトを作成する必要があります。
+## 0. 前提条件
 
-### プロジェクト作成手順
+- GitHubリポジトリがある
+- Cloudflareアカウントがある
+
+## 1. Cloudflare Pages プロジェクトの設定
+
+### ステップ1: GitHubリポジトリを連携
 
 1. [Cloudflare ダッシュボード](https://dash.cloudflare.com/)にログイン
 2. 左サイドバーから「Workers & Pages」を選択
 3. 「Pages」タブをクリック
-4. 「Create a project」をクリック
-5. **「Upload assets」を選択**（GitHub連携は不要です。GitHub Actionsでビルドしてからデプロイします）
-6. プロジェクト名を入力（例: `cozyroom`）
-   - **重要**: このプロジェクト名は、GitHub Secretsの `CLOUDFLARE_PAGES_PROJECT_NAME` に設定する必要があります
-7. 「Create project」をクリック
+4. プロジェクト名（`cozyroom`）を選択
+5. 「Settings」タブを開く
+6. 左サイドバーから「Builds & deployments」を選択
 
-### 自動ビルドを無効にする（重要）
+### ステップ2: ビルド設定を構成
 
-**エラー**: `Failed: build output directory not found` が出る場合、自動ビルドが有効になっています。
+「Build configurations」セクションで以下を設定：
 
-GitHub Actionsでビルドしてからデプロイするため、Cloudflare Pagesの自動ビルドは**必ず無効にする必要があります**。
+```
+Framework preset: Next.js
+Build command: npm run pages:build
+Build output directory: .vercel/output/static
+Root directory: (空欄)
+Environment variables: Production と Preview
+```
 
-#### 方法1: GitHub連携を解除する（推奨）
+**重要**: 
+- Build commandは `npm run pages:build` を使用
+- Build output directoryは `.vercel/output/static` を指定
+- 「Production branch」が `main` になっているか確認
 
-**現在のエラー**: `Failed: build output directory not found` は、Cloudflare Pagesの自動ビルドが有効になっているためです。
+### ステップ3: 自動デプロイを有効化
 
-1. [Cloudflareダッシュボード](https://dash.cloudflare.com/)にログイン
-2. 「Workers & Pages」→「Pages」→プロジェクト名を選択
-3. 「Settings」タブを開く
-4. 左サイドバーから「**Builds & deployments**」を選択
-5. 「Source」または「Connected repository」セクションを探す
-6. GitHubリポジトリが表示されている場合：
-   - 「**Disconnect repository**」または「**Unlink repository**」ボタンをクリック
-   - 確認ダイアログで「Disconnect」または「Unlink」を選択
-7. これで、GitHub Actionsでのデプロイのみが実行され、Cloudflare Pagesの自動ビルドは停止します
-
-**確認方法**: 
-- Settings > Builds & deployments に戻ると、GitHubリポジトリの表示が消えているはずです
-- これ以降、GitHub Actionsでのデプロイのみが実行されます
-
-#### 方法2: プロジェクトを再作成する
-
-1. 既存のプロジェクトを削除（必要に応じて）
-2. 「Create a project」をクリック
-3. **必ず「Upload assets」を選択**（「Connect to Git」は選択しない）
-4. プロジェクト名を入力（例: `cozyroom`）
-5. 「Create project」をクリック
-
-**注意**: プロジェクトを再作成した場合、環境変数と互換性フラグを再度設定する必要があります。
-
-### プロジェクト名の確認
-
-- Cloudflare Pagesのダッシュボードで、作成したプロジェクトの名前を確認してください
+1. 同じ「Builds & deployments」ページで：
+2. 「Production deployments」を **Enabled** に設定
+3. 「Preview deployments」を **All deployments** に設定（お好みで）
+4. 「Save」をクリック
 - プロジェクト名は大文字小文字を区別します
 - デフォルトでは `cozyroom` が使用されますが、変更した場合はGitHub Secretsに設定してください
 
-## 1. 環境変数の設定
+## 2. 環境変数の設定
 
 Cloudflare Pagesのダッシュボードで以下の環境変数を設定してください：
 
@@ -118,7 +107,7 @@ Cloudflare Pagesのダッシュボードで設定する方法が最も確実で�
 1. 環境変数の一覧をスクリーンショットまたはメモに保存
 2. または、`.env.example.txt` ファイルに値の形式をメモしておく（実際の値は記載しない）
 
-## 1.5. 互換性フラグの設定
+## 3. 互換性フラグの設定
 
 **重要**: `@cloudflare/next-on-pages`を使用する場合、`nodejs_compat`フラグを有効にする必要があります。
 
