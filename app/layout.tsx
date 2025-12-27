@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
+  icons: {
+    icon: '/icon.svg',
+  },
   openGraph: {
     title: 'CozyRoom',
     description: '完全招待制のブログ',
