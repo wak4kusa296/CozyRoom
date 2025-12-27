@@ -7,19 +7,25 @@ export interface User {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const cookieStore = await cookies()
-  const userId = cookieStore.get('cozyroom_user_id')?.value
-  const userName = cookieStore.get('cozyroom_user_name')?.value
-  const userRole = cookieStore.get('cozyroom_user_role')?.value as 'admin' | 'member' | undefined
+  try {
+    const cookieStore = await cookies()
+    const userId = cookieStore.get('cozyroom_user_id')?.value
+    const userName = cookieStore.get('cozyroom_user_name')?.value
+    const userRole = cookieStore.get('cozyroom_user_role')?.value as 'admin' | 'member' | undefined
 
-  if (!userId || !userName || !userRole) {
+    if (!userId || !userName || !userRole) {
+      return null
+    }
+
+    return {
+      id: userId,
+      name: userName,
+      role: userRole,
+    }
+  } catch (error) {
+    console.error('[getCurrentUser] Error:', error)
+    // エラーが発生した場合はログインしていないとみなす
     return null
-  }
-
-  return {
-    id: userId,
-    name: userName,
-    role: userRole,
   }
 }
 
