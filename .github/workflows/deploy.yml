@@ -89,37 +89,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-      - name: Set nodejs_compat compatibility flag
-        run: |
-          PROJECT_NAME="${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || 'cozyroom' }}"
-          ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
-          API_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
-          
-          echo "nodejs_compatフラグを設定中..."
-          
-          # プロジェクト設定を取得
-          PROJECT_INFO=$(curl -s -X GET \
-            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT_NAME}" \
-            -H "Authorization: Bearer ${API_TOKEN}" \
-            -H "Content-Type: application/json")
-          
-          # nodejs_compatフラグを設定
-          UPDATE_RESPONSE=$(curl -s -X PATCH \
-            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT_NAME}" \
-            -H "Authorization: Bearer ${API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d '{"deployment_configs":{"production":{"compatibility_flags":["nodejs_compat"]},"preview":{"compatibility_flags":["nodejs_compat"]}}}')
-          
-          if echo "$UPDATE_RESPONSE" | grep -q '"success":true'; then
-            echo "✓ nodejs_compatフラグを設定しました。"
-          else
-            echo "警告: nodejs_compatフラグの設定に失敗しました: $UPDATE_RESPONSE"
-            echo "手動で設定してください: Pages > プロジェクト名 > Settings > Functions > Compatibility Flags"
-          fi
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-
       - name: Deploy to Cloudflare Pages
         run: |
           wrangler pages deploy .vercel/output/static \
@@ -127,4 +96,55 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Set nodejs_compat compatibility flag (after deploy)
+        run: |
+          PROJECT_NAME="${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || 'cozyroom' }}"
+          ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+          API_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          
+          echo "デプロイ後にnodejs_compatフラグを設定中..."
+          
+          # 現在のプロジェクト設定を取得
+          PROJECT_JSON=$(curl -s -X GET \
+            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT_NAME}" \
+            -H "Authorization: Bearer ${API_TOKEN}" \
+            -H "Content-Type: application/json")
+          
+          echo "現在のプロジェクト設定を取得しました"
+          
+          # nodejs_compatフラグを設定（既存の設定を上書き）
+          UPDATE_RESPONSE=$(curl -s -X PATCH \
+            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT_NAME}" \
+            -H "Authorization: Bearer ${API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "deployment_configs": {
+                "production": {
+                  "compatibility_flags": ["nodejs_compat"]
+                },
+                "preview": {
+                  "compatibility_flags": ["nodejs_compat"]
+                }
+              }
+            }')
+          
+          echo "更新レスポンス: $UPDATE_RESPONSE"
+          
+          if echo "$UPDATE_RESPONSE" | grep -q '"success":true'; then
+            echo "✓ nodejs_compatフラグを設定しました。"
+          else
+            echo "⚠️ 警告: nodejs_compatフラグの自動設定に失敗しました。"
+            echo "手動で設定してください:"
+            echo "1. https://dash.cloudflare.com/ にアクセス"
+            echo "2. Pages > ${PROJECT_NAME} > Settings > Functions > Compatibility Flags"
+            echo "3. Production と Preview の両方に nodejs_compat を追加"
+            echo ""
+            echo "レスポンス: $UPDATE_RESPONSE"
+            # フラグ設定の失敗は警告のみで、デプロイは成功とする
+          fi
+        continue-on-error: true
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
