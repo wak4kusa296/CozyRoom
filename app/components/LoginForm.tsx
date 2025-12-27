@@ -13,7 +13,7 @@ export default function LoginForm() {
     
     try {
       const result = await authenticateWithInvitationCode(formData)
-      if (result?.error) {
+      if (result && 'error' in result) {
         setError(result.error)
         setIsLoading(false)
       }
