@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/libs/auth'
 import { signOut } from '../actions/auth'
-import { getArticles } from '@/libs/microcms'
+import { getArticles, type MicroCMSArticle } from '@/libs/microcms'
 import Link from 'next/link'
 
 export default async function BlogPage() {
@@ -11,7 +11,7 @@ export default async function BlogPage() {
     redirect('/')
   }
 
-  let articles
+  let articles: MicroCMSArticle[] = []
   let errorMessage: string | null = null
   
   try {

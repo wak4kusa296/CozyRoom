@@ -14,7 +14,7 @@ jobs:
           curl -X GET \
             -H "Authorization: Bearer ${{ secrets.KEEP_ALIVE_SECRET }}" \
             "${{ secrets.KEEP_ALIVE_URL }}/api/cron?token=${{ secrets.KEEP_ALIVE_SECRET }}"
-        
+
       - name: Check Response
         run: |
           response=$(curl -s -w "\n%{http_code}" -X GET \
@@ -28,10 +28,10 @@ jobs:
           echo "Response: $body"
           
           if [ "$http_code" = "200" ] && echo "$body" | grep -q '"success":true'; then
-            echo "✅ Keep-alive successful"
+            echo "Keep-alive successful"
             exit 0
           else
-            echo "❌ Keep-alive failed"
+            echo "Keep-alive failed"
             echo "HTTP Code: $http_code"
             echo "Response: $body"
             exit 1

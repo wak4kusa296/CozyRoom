@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/libs/auth'
-import { getArticleById, getAllArticleIds } from '@/libs/microcms'
+import { getArticleById, getAllArticleIds, type MicroCMSArticle } from '@/libs/microcms'
 import Comments from './components/Comments'
 import Link from 'next/link'
 
@@ -26,7 +26,7 @@ export default async function ArticlePage({
     redirect('/')
   }
 
-  let article
+  let article: MicroCMSArticle
   try {
     article = await getArticleById(slug)
   } catch (error) {
