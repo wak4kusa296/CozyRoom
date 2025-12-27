@@ -78,15 +78,30 @@ Cloudflare Pagesのダッシュボードで以下の環境変数を設定して�
 
 ### 環境変数が消える問題
 
-**注意**: 通常、デプロイで環境変数が消えることはありません。以下の点を確認してください：
+**重要**: `wrangler.toml`を使用してDirect Upload（`wrangler pages deploy`）でデプロイする場合、環境変数の扱いが異なることがあります。
+
+#### 環境変数の設定方法（推奨）
+
+Cloudflare Pagesのダッシュボードで設定する方法が最も確実です：
+
+1. **Settings > Environment variables で設定**：
+   - プロジェクト設定（Settings）で設定してください
+   - デプロイメント（Deployments）の設定ではありません
+   - **Production と Preview の両方にチェックを入れる**
+
+2. **wrangler.tomlには環境変数を書かない**：
+   - `wrangler.toml`に環境変数を書くことは推奨されません（機密情報がGitにコミットされるため）
+   - 環境変数はダッシュボードで設定するのが安全です
+
+#### 環境変数が消える場合の確認事項
 
 1. **プロジェクトを削除・再作成していないか**：
    - プロジェクトを削除すると、環境変数も削除されます
    - 既存のプロジェクトを使用する限り、環境変数は保持されます
 
 2. **環境変数の設定場所を確認**：
-   - Settings > Environment variables で設定してください
-   - デプロイメント（Deployments）の設定ではなく、プロジェクト設定（Settings）で設定してください
+   - Settings > Environment variables で設定されているか確認
+   - デプロイ後に Settings > Environment variables に戻って、環境変数が残っているか確認
 
 3. **Production と Preview の両方に設定**：
    - 環境変数を追加する際、Production と Preview の両方にチェックを入れることを確認
