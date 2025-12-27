@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Edge Runtimeを明示的に指定
+export const runtime = 'edge'
+
 export function middleware(request: NextRequest) {
   const userId = request.cookies.get('cozyroom_user_id')?.value
   
