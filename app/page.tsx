@@ -3,7 +3,6 @@ import { getCurrentUser } from '@/libs/auth'
 import LoginForm from './components/LoginForm'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 export default async function Home() {
   try {
