@@ -10,10 +10,19 @@
 2. 左サイドバーから「Workers & Pages」を選択
 3. 「Pages」タブをクリック
 4. 「Create a project」をクリック
-5. 「Connect to Git」を選択（GitHub連携は後で設定するため、ここでは「Upload assets」でも可）
+5. **「Upload assets」を選択**（GitHub連携は不要です。GitHub Actionsでビルドしてからデプロイします）
 6. プロジェクト名を入力（例: `cozyroom`）
    - **重要**: このプロジェクト名は、GitHub Secretsの `CLOUDFLARE_PAGES_PROJECT_NAME` に設定する必要があります
 7. 「Create project」をクリック
+
+### 自動ビルドを無効にする
+
+GitHub Actionsでビルドしてからデプロイするため、Cloudflare Pagesの自動ビルドは使用しません。
+
+- プロジェクトがGitHubリポジトリと連携している場合：
+  1. プロジェクトの「Settings」タブを開く
+  2. 「Builds & deployments」セクションで「Disable automatic builds」を選択
+  3. または、プロジェクトを削除して「Upload assets」方式で再作成
 
 ### プロジェクト名の確認
 
