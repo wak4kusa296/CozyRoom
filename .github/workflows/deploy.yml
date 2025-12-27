@@ -31,12 +31,47 @@ jobs:
           MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
           MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
 
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Create Cloudflare Pages Project (if not exists)
+        run: |
+          PROJECT_NAME="${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || 'cozyroom' }}"
+          ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}"
+          API_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          
+          # プロジェクトが存在するか確認
+          RESPONSE=$(curl -s -X GET \
+            "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT_NAME}" \
+            -H "Authorization: Bearer ${API_TOKEN}" \
+            -H "Content-Type: application/json")
+          
+          # 404エラーの場合（プロジェクトが存在しない）、作成を試みる
+          if echo "$RESPONSE" | grep -q '"code":8000007' || echo "$RESPONSE" | grep -q '"success":false'; then
+            echo "プロジェクト '$PROJECT_NAME' が見つかりません。作成します..."
+            CREATE_RESPONSE=$(curl -s -X POST \
+              "https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects" \
+              -H "Authorization: Bearer ${API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"name\":\"${PROJECT_NAME}\",\"production_branch\":\"main\"}")
+            
+            if echo "$CREATE_RESPONSE" | grep -q '"success":true'; then
+              echo "プロジェクト '$PROJECT_NAME' を作成しました。"
+            else
+              echo "プロジェクト作成のレスポンス: $CREATE_RESPONSE"
+              echo "プロジェクトが既に存在する可能性があります。続行します..."
+            fi
+          else
+            echo "プロジェクト '$PROJECT_NAME' は既に存在します。"
+          fi
+        continue-on-error: true
+
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || 'cozyroom' }}
-          directory: .vercel/output/static
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          wrangler pages deploy .vercel/output/static \
+            --project-name=${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || 'cozyroom' }} \
+            --compatibility-date=2024-01-01
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
