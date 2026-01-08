@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像フィルター調整システム - xBRZ × Kuwahara × ラフ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="title-icon">🎨</span>
+                    <span class="title-text">画像フィルター調整システム</span>
+                </h1>
+                <p class="app-subtitle">xBRZ × Kuwahara × ラフフィルターの重ね掛け</p>
+            </div>
+        </header>
+
+        <!-- メインコンテンツ -->
+        <main class="app-main">
+            <!-- ファイルアップロードセクション -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept="image/*" hidden>
+                    <div class="upload-content">
+                        <div class="upload-icon">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <p class="upload-text">画像をドラッグ&ドロップ</p>
+                        <p class="upload-hint">またはクリックしてファイルを選択</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- プレビューとコントロール -->
+            <div class="content-grid">
+                <!-- プレビューエリア -->
+                <section class="preview-section">
+                    <div class="preview-card">
+                        <h2 class="card-title">元画像</h2>
+                        <div class="canvas-wrapper">
+                            <canvas id="originalCanvas"></canvas>
+                            <div class="canvas-placeholder" id="originalPlaceholder">
+                                <p>画像をアップロードしてください</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preview-card">
+                        <h2 class="card-title">処理後</h2>
+                        <div class="canvas-wrapper">
+                            <canvas id="processedCanvas"></canvas>
+                            <div class="canvas-placeholder" id="processedPlaceholder">
+                                <p>フィルターを適用すると結果が表示されます</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-download" id="downloadBtn" disabled>
+                            <span class="btn-icon">⬇️</span>
+                            <span>画像をダウンロード</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- コントロールパネル -->
+                <aside class="controls-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">フィルター設定</h2>
+                    </div>
+
+                    <div class="panel-content">
+                        <!-- xBRZフィルター -->
+                        <div class="filter-card">
+                            <div class="filter-header">
+                                <div class="filter-title-group">
+                                    <span class="filter-icon">🔍</span>
+                                    <h3 class="filter-title">xBRZ フィルター</h3>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="xbrzEnabled" checked>
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                            <div class="filter-body" id="xbrzControls">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <span>拡大倍率</span>
+                                    </label>
+                                    <select class="control-select" id="xbrzScale">
+                                        <option value="2">2倍</option>
+                                        <option value="3" selected>3倍</option>
+                                        <option value="4">4倍</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kuwaharaフィルター -->
+                        <div class="filter-card">
+                            <div class="filter-header">
+                                <div class="filter-title-group">
+                                    <span class="filter-icon">🖼️</span>
+                                    <h3 class="filter-title">Kuwahara フィルター</h3>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="kuwaharaEnabled">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                            <div class="filter-body" id="kuwaharaControls">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <span>ウィンドウサイズ</span>
+                                        <span class="control-value" id="kuwaharaSizeValue">5</span>
+                                    </label>
+                                    <input type="range" class="control-range" id="kuwaharaSize" 
+                                           min="3" max="21" step="2" value="5">
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <span>強度</span>
+                                        <span class="control-value" id="kuwaharaStrengthValue">100%</span>
+                                    </label>
+                                    <input type="range" class="control-range" id="kuwaharaStrength" 
+                                           min="0" max="100" step="1" value="100">
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <span>楕円比</span>
+                                        <span class="control-value" id="kuwaharaAlphaValue">0.50</span>
+                                    </label>
+                                    <input type="range" class="control-range" id="kuwaharaAlpha" 
+                                           min="0.1" max="1.0" step="0.01" value="0.50">
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <span>エッジ保持</span>
+                                        <span class="control-value" id="kuwaharaSharpnessValue">15.0</span>
+                                    </label>
+                                    <input type="range" class="control-range" id="kuwaharaSharpness" 
+                                           min="1.0" max="30.0" step="0.1" value="15.0">
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                        <span>色パレット階調化</span>
+                                        <label class="switch" style="position: relative; width: 48px; height: 24px;">
+                                            <input type="checkbox" id="kuwaharaColorPalette" checked>
+                                            <span class="switch-slider"></span>
+                                        </label>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ラフフィルター -->
+                        <div class="filter-card">
+                            <div class="filter-header">
+                                <div class="filter-title-group">
+                                    <span class="filter-icon">📐</span>
+                                    <h3 class="filter-title">ラフフィルター</h3>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="roughEnabled">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                            <div class="filter-body" id="roughControls">
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <span>粗さ</span>
+                                        <span class="control-value" id="roughAmountValue">20</span>
+                                    </label>
+                                    <input type="range" class="control-range" id="roughAmount" 
+                                           min="0" max="100" step="1" value="20">
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <span>ノイズサイズ</span>
+                                        <span class="control-value" id="roughSizeValue">2</span>
+                                    </label>
+                                    <input type="range" class="control-range" id="roughSize" 
+                                           min="1" max="10" step="1" value="2">
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label">
+                                        <span>コントラスト</span>
+                                        <span class="control-value" id="roughContrastValue">50%</span>
+                                    </label>
+                                    <input type="range" class="control-range" id="roughContrast" 
+                                           min="0" max="100" step="1" value="50">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- アクションボタン -->
+                        <div class="action-buttons">
+                            <button class="btn btn-primary btn-process" id="processBtn" disabled>
+                                <span class="btn-icon">✨</span>
+                                <span>処理を実行</span>
+                            </button>
+                            <button class="btn btn-secondary" id="resetBtn">
+                                <span class="btn-icon">🔄</span>
+                                <span>リセット</span>
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        <!-- フッター -->
+        <footer class="app-footer">
+            <p>
+                xBRZフィルターには <a href="https://github.com/joseprio/xBRjs" target="_blank">xBRjs</a> (MIT License) を使用しています
+            </p>
+        </footer>
+    </div>
+
+    <!-- xBRjsライブラリ (MIT License) -->
+    <!-- https://github.com/joseprio/xBRjs -->
+    <!-- ローカルのxBRjsライブラリを使用 -->
+    <script src="xBRjs-master/dist/xBRjs.umd.js"></script>
+    <script src="filters.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

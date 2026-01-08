@@ -1,145 +1,111 @@
-# CozyRoom
+# 画像フィルター調整システム
 
-完全招待制のブログWebアプリケーション
+![xBRZ](https://img.shields.io/badge/xBRZ-Scaler-blue)
+![Kuwahara](https://img.shields.io/badge/Kuwahara-Filter-green)
+![Rough](https://img.shields.io/badge/Rough-Filter-orange)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-## 技術スタック
+**xBRZ × Kuwahara × ラフフィルター**を重ね掛けできる画像調整システムです。
 
-- **Framework:** Next.js 15+ (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **CMS:** MicroCMS
-- **DB/Auth:** Supabase (PostgreSQL)
-- **Deployment:** Cloudflare Pages
+## 🌟 特徴
 
-## セットアップ
+- **xBRZフィルター**: [xBRjs](https://github.com/joseprio/xBRjs) (MIT License) を使用した本格的なピクセルアートスケーリング
+- **Kuwaharaフィルター**: 絵画風効果を生成する非線形フィルター
+- **ラフフィルター**: 画像に粗さ・質感を追加するフィルター
+- **モダンなUI**: ダークテーマで使いやすいインターフェース
+- **レスポンシブデザイン**: PC・タブレット・スマートフォンに対応
+- **完全クライアントサイド**: プライバシー保護、サーバー不要
 
-### 1. 依存関係のインストール
+## 🚀 使い方
 
-```bash
-npm install
-```
+### 1. 画像をアップロード
 
-### 2. 環境変数の設定
+- ファイルをドラッグ&ドロップ
+- またはアップロードエリアをクリックしてファイルを選択
 
-詳細な設定手順は `ENV_SETUP.md` を参照してください。
+### 2. フィルターを設定
 
-**クイックセットアップ**:
+各フィルターを個別に有効/無効にでき、パラメータを調整できます：
 
-```bash
-# Windows (PowerShell)
-Copy-Item env.example.txt .env.local
+- **xBRZフィルター**: 拡大倍率（2倍、3倍、4倍）
+- **Kuwaharaフィルター**: ウィンドウサイズ、強度
+- **ラフフィルター**: 粗さ、ノイズサイズ、コントラスト
 
-# Mac/Linux
-cp env.example.txt .env.local
-```
+### 3. 処理を実行
 
-その後、`.env.local` を編集して各環境変数を設定してください。
+「処理を実行」ボタンをクリックすると、フィルターが順番に適用されます。
 
-**必要な環境変数**:
-- `NEXT_PUBLIC_SUPABASE_URL`: SupabaseプロジェクトのURL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabaseの匿名キー
-- `SUPABASE_SERVICE_ROLE_KEY`: Supabaseのサービスロールキー
-- `MICROCMS_API_KEY`: MicroCMSのAPIキー
-- `MICROCMS_SERVICE_DOMAIN`: MicroCMSのサービスドメイン
-- `KEEP_ALIVE_SECRET`: Keep-Alive API用の認証トークン（ランダムな文字列）
+### 4. 結果をダウンロード
 
-**Cloudflare Pagesでの設定**:
-Cloudflare Pagesでも同じ環境変数を設定する必要があります。詳細は `ENV_SETUP.md` を参照してください。
+処理後の画像をPNG形式でダウンロードできます。
 
-### 3. Supabase データベースのセットアップ
-
-**推奨: クイックセットアップ**
-
-`supabase/quick_setup.sql` の内容をSupabaseのSQL Editorで一度に実行してください。
-これでテーブル、RLSポリシー、初期管理人（招待コード: `admin`）がすべて作成されます。
-
-**手動セットアップ（2ステップ）**
-
-1. `supabase/schema.sql` を実行（テーブルとRLSポリシーの作成）
-2. `supabase/init_admin.sql` を実行（管理人の作成）
-
-詳細は `supabase/SETUP_INSTRUCTIONS.md` を参照してください。
-
-### 4. 開発サーバーの起動
-
-```bash
-npm run dev
-```
-
-ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
-
-## デプロイ
-
-### Cloudflare Pages へのデプロイ
-
-詳細は `cloudflare-pages.md` を参照してください。
-
-#### クイックデプロイ
-
-```bash
-npm run pages:build
-npm run pages:deploy
-```
-
-## GitHub Actions の設定
-
-### Keep-Alive の設定
-
-1. GitHubリポジトリの Settings > Secrets and variables > Actions で以下を設定：
-   - `KEEP_ALIVE_SECRET`: Keep-Alive API用の認証トークン
-   - `KEEP_ALIVE_URL`: デプロイされたサイトのURL
-
-2. `.github/workflows/cron.yml` が毎日自動実行されます
-
-### 自動デプロイの設定
-
-1. GitHubリポジトリの Settings > Secrets and variables > Actions で以下を設定：
-   - `CLOUDFLARE_API_TOKEN`: Cloudflare APIトークン
-   - `CLOUDFLARE_ACCOUNT_ID`: CloudflareアカウントID
-   - その他の環境変数（上記参照）
-
-2. `main`ブランチにプッシュすると自動デプロイされます
-
-## プロジェクト構造
+## 📁 ファイル構成
 
 ```
-.
-├── app/              # Next.js App Router
-│   ├── actions/      # Server Actions
-│   ├── api/          # API Routes
-│   └── blog/         # ブログページ
-├── libs/             # ユーティリティ関数
-│   ├── supabase/     # Supabaseクライアント
-│   └── microcms.ts   # MicroCMSクライアント
-├── supabase/         # データベーススキーマ
-└── public/           # 静的ファイル
+CozyRoom/
+├── index.html          # メインHTMLファイル
+├── style.css           # スタイルシート
+├── filters.js          # フィルター実装（xBRZ、Kuwahara、ラフ）
+├── app.js              # アプリケーションロジック
+└── README.md           # このファイル
 ```
 
-## 機能
+## 🎨 フィルター詳細
 
-### 認証
-- 招待コードによる認証
-- Cookieベースのセッション管理
+### xBRZフィルター
 
-### ブログ
-- MicroCMSから記事を取得
-- 記事一覧・詳細ページ
+ピクセルアート専用の高品質スケーリングアルゴリズムです。
 
-### コメント
-- 1-on-1コメント機能（返信機能）
-- 表示制御（RLS）:
-  - 一般ユーザー: 自分のコメントと自分宛ての管理人からの返信のみ表示
-  - 管理人: 全員のコメントを表示
+- **拡大倍率**: 2倍、3倍、4倍に対応
+- **ライブラリ**: [xBRjs](https://github.com/joseprio/xBRjs) (MIT License)
+- **最適な用途**: ドット絵、ピクセルアート、レトロゲームのスクリーンショット
 
-### インフラ
-- Keep-Alive API（Supabaseの自動停止を防ぐ）
-- GitHub Actionsによる定期実行
+### Kuwaharaフィルター
 
-## OGP画像の設定
+エッジを保持しながらノイズを低減し、絵画風の効果を生成します。
 
-`public/ogp-default.png` に1200x630pxのOGP画像を配置してください。
-現在は `app/layout.tsx` で `/ogp-default.png` を参照しています。
+- **ウィンドウサイズ**: 3～21（奇数）
+- **強度**: 0～100%
+- **最適な用途**: 写真、イラスト、アーティスティックな効果
 
-## ライセンス
+### ラフフィルター
 
-MIT
+画像に粗さや質感を追加します。
+
+- **粗さ**: 0～100
+- **ノイズサイズ**: 1～10
+- **コントラスト**: 0～100%
+- **最適な用途**: テクスチャ追加、手描き風効果
+
+## 🛠️ 技術スタック
+
+- **HTML5**: Canvas API、File API
+- **CSS3**: CSS Grid、Flexbox、CSS変数
+- **JavaScript (ES6+)**: Vanilla JavaScript
+- **xBRjs**: ピクセルアートスケーリングライブラリ
+
+## 🌐 ブラウザ互換性
+
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+## 📄 ライセンス
+
+MIT License
+
+### 使用ライブラリ
+
+- **[xBRjs](https://github.com/joseprio/xBRjs)**
+  - Copyright (c) 2020 Josep del Rio
+  - MIT License
+
+## 🙏 謝辞
+
+- **[xBRjs](https://github.com/joseprio/xBRjs)** - xBRZフィルター実装（MIT License）
+- **[pixel-scaler](https://github.com/irokaru/pixel-scaler)** - 実装の参考にさせていただきました
+
+---
+
+**Note**: このアプリケーションはクライアントサイドで完全に動作します。画像はサーバーにアップロードされません。
